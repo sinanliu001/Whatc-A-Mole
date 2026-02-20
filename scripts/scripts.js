@@ -38,7 +38,7 @@ class GameModel {
 		this.#gameBoard = newList;
 	}
 	incrementScore(id) {
-		if (this.#gameBoard.find(item => item.id == id)) {
+		if (this.#gameBoard.find(item => item.id == id && item.showMole)) {
 			this.#score += 1;
 			this.#gameBoard = this.#gameBoard.map(item => {
 				if (item.id == id) return {
