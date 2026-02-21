@@ -73,20 +73,9 @@ class GameModel {
 		this.#gameBoard = newList;
 	}
 	incrementScore(id) {
-		if (this.model.getSnakeId() == id) {
-			clearInterval(this.model.getIntervalId())
-			this.model.newGame()
-			this.view.render(
-				this.model.getScore(),
-				this.view.getTempView(this.model.getGameBoard(), this.model.getSnakeId()),
-				this.model.getTime()
-			)
-			alert('Game Over')
-			return;
-		}
-		if (this.model.#gameBoard.find(item => item.id == id && item.showMole)) {
-			this.model.#score += 1;
-			this.model.#gameBoard = this.model.#gameBoard.map(item => {
+		if (this.#gameBoard.find(item => item.id == id && item.showMole)) {
+			this.#score += 1;
+			this.#gameBoard = this.#gameBoard.map(item => {
 				if (item.id == id) {
 					return {
 						...item,
@@ -130,6 +119,7 @@ class GameModel {
 			id: null,
 			life: 1000
 		}
+		clearInterval(this.getIntervalId());
 		this.#interval = null
 	}
 }
@@ -163,10 +153,20 @@ class GameView {
 		return result;
 	}
 
-	render(score, list, time) {
-		this.dom.gameBoardContainer.innerHTML = list
+	renderScore(score) {
 		this.dom.score.textContent = score;
+	}
+
+	renderTimer(time) {
 		this.dom.timer.textContent = time
+	}
+	renderGameBoard(list, snakeId) {
+		const view = this.getTempView(list, snakeId)
+		this.dom.gameBoardContainer.innerHTML = view
+	}
+
+	renderAlert(message) {
+		alert(message);
 	}
 }
 
@@ -176,17 +176,17 @@ class GameControler {
 	constructor(model, view) {
 		this.model = model;
 		this.view = view;
-
 	}
 	startGame() {
 		if (this.model.getIntervalId()) return;
 
 		const id = setInterval(() => {
 			if (this.model.getTime() <= 0) {
-				clearInterval(this.model.getIntervalId());
 				this.model.newGame();
-				this.view.render(this.model.getScore(), this.view.getTempView(this.model.getGameBoard()), model.getTime())
-				alert("Time is Over !");
+				this.view.renderScore(this.model.getScore())
+				this.view.renderGameBoard(this.model.getGameBoard(), this.model.getSnakeId())
+				this.view.renderTimer(this.model.getTime())
+				this.view.renderAlert("Time is Over !");
 				return;
 			}
 			if (this.model.getSnakeLife() == 0) {
@@ -201,29 +201,29 @@ class GameControler {
 				this.model.setMole.call(this.model, selectId);
 			}
 			this.model.decreaseTime();
-			this.view.render(
-				this.model.getScore(),
-				this.view.getTempView(this.model.getGameBoard(), this.model.getSnakeId()),
-				model.getTime()
-			);
+			this.view.renderGameBoard(this.model.getGameBoard(), this.model.getSnakeId());
+			this.view.renderTimer(this.model.getTime())
 			this.model.setIntervalId(id);
 		}, 1000);
 	}
 	getPoint(event) {
 		const target = event.target.id
-		this.model.incrementScore.call(this, target)
-		this.view.render(
-			this.model.getScore(),
-			this.view.getTempView(this.model.getGameBoard(), this.model.getSnakeId()),
-			this.model.getTime()
-		)
+		if (target == this.model.getSnakeId()) {
+			this.model.newGame();
+			this.view.renderScore(this.model.getScore())
+			this.view.renderGameBoard(this.model.getGameBoard(), this.model.getSnakeId())
+			this.view.renderTimer(this.model.getTime())
+			this.view.renderAlert("Game Over !");
+			return;
+		}
+		this.model.incrementScore(target)
+		this.view.renderScore(this.model.getScore())
+		this.view.renderGameBoard(this.model.getGameBoard(), this.model.getSnakeId())
 	}
 	init() {
-		this.view.render(
-			this.model.getScore(),
-			this.view.getTempView(this.model.getGameBoard(), this.model.getSnakeId()),
-			this.model.getTime()
-		)
+		this.view.renderScore(this.model.getScore())
+		this.view.renderTimer(this.model.getTime())
+		this.view.renderGameBoard(this.model.getGameBoard(), this.model.getSnakeId())
 		const { startBtn, gameBoardContainer } = this.view.dom
 		startBtn.addEventListener('click', this.startGame.bind(this))
 		gameBoardContainer.addEventListener('click', (event) => this.getPoint.call(this, event))
