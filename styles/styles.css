@@ -9,7 +9,8 @@ main {
 }
 
 .game_header {
-  position: relative
+  position: relative;
+  width: 800px;
 }
 
 .game_controler_layout {
@@ -33,9 +34,9 @@ main {
 
 .game_timer_layout {
   position: absolute;
-  top: 0;
-  right: -50%;
-  transition: 100% 0%;
+  width: 200px;
+  top: -10px;
+  right: -180px;
 }
 
 .game_timer_layout div {
